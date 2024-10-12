@@ -29,11 +29,14 @@ function PostForm({ post }) {
 
   // handle form submit for update and create
   const submit = async (data) => {
+    console.log(data)
     // updation case if post is exsist
     if (post) {
       // uploading new file
-      const file = data.image[0] ? postServices.uploadFile(data.image[0]) : null
-
+      let file = null;
+      if (data.featuredImage && data.featuredImage.length > 0) {
+        file = await postServices.uploadFile(data.featuredImage[0]);
+      }
       // deleting old file
       if (file) {
         postServices.deleteFile(post.featuredImage)
@@ -53,21 +56,23 @@ function PostForm({ post }) {
     }
     // creation case
     else {
-      // uploading new file and must required
-      const file = await data.image[0] ? postServices.uploadFile(data.image[0]) : null
-
-      // setting fileId
-      data.featuredImage = file ? file.$id : 'google.com'
-
-      if (!data.image[0]) {
-        // Show an error message to the user
+      // Creation case
+      if (!data.featuredImage || data.featuredImage.length === 0) {
         console.error("Featured image is required");
+        return;
+      }
+
+      const file = await postServices.uploadFile(data.featuredImage[0]);
+
+      if (!file) {
+        console.error("Failed to upload file");
         return;
       }
 
       // creating post
       const createdPost = await postServices.createPost({
         ...data,
+        featuredImage: file.$id,
         userId: userData.$id
       })
       // navigate to created post
@@ -156,7 +161,7 @@ function PostForm({ post }) {
           className="mb-4"
           {...register("status", { required: true })}
         />
-        <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full" text={post ? "Update" : "Submit"}/>
+        <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full" text={post ? "Update" : "Submit"} />
       </div>
     </form>
   )

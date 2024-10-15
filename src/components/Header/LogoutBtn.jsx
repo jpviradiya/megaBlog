@@ -1,15 +1,18 @@
 import { useDispatch } from 'react-redux'
 import { authServices } from '../../appwrite';
 import { logout } from '../../store/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 const LogoutBtn = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const logoutHandler = () => {
     // returning promise and handle using dispatch and call logout method in redux
     authServices.logout() // '../../appwrite/auth'(appwrite)
       .then(() => {
         dispatch(logout()) // '../../store/authSlice'(redux)
       })
+    navigate('/')
   }
   return (
     // TODO: use Button component
